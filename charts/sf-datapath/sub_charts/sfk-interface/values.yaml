@@ -6,7 +6,7 @@ replicaCount: 1
 image:
   repository: snappyflowml/sfk-interface
   pullPolicy: IfNotPresent
-  tag: 13
+  tag: 14
 
 nameOverride: ""
 fullnameOverride: ""
@@ -66,5 +66,5 @@ containerResources:
 schedules:
   sink: "*/5 * * * *"
 
-esSinkDefaults:
-  maxTasksPerPartition: 5
+sinkDefaults:
+  maxTasksPerTopic: 5
