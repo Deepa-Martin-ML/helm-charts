@@ -13,7 +13,7 @@ data:
                 "connect": "http://{{ template "sfk-interface.apmConnect.fullname" . }}:8083"
             },
             "agent_ep": "{{ .Values.global.sfAgentInput.scheme }}://{{ .Values.global.sfAgentInput.host }}:{{ .Values.global.sfAgentInput.port }}",
-            "sign_service": "http://{{ template "sfk-interface.signatures.fullname" . }}",
+            "sign_service": "http://{{ template "sfk-interface.signatures-and-kafka-apis.fullname" . }}",
             "db": {
                 "name":  "{{ .Values.global.postgresql.postgresqlDatabase }}",
                 "user":  "{{ .Values.global.postgresql.postgresqlUsername }}",
@@ -26,7 +26,7 @@ data:
         {
             "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
             "auto.create.indices.at.start": "false",
-            "max_tasks_per_topic": {{ .Values.sinkDefaults.maxTasksPerTopic }},
+            "max_tasks_per_topic": {{ .Values.global.maxTasksPerTopic }},
             "errors.tolerance": "all",
             "drop.invalid.message": "true",
             "behavior.on.malformed.documents": "warn",
