@@ -1,8 +1,8 @@
 {{- if and .Values.archivalConnectAutoscaling.enabled .Values.global.archival.enabled -}}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "autoscaling.fullname" . }}-archival-connect
+  name: {{ .Release.Namespace }}-archival-connect
   namespace: {{ .Release.Namespace }}
 
 spec:
@@ -15,14 +15,36 @@ spec:
   metrics:
   - type: Pods
     pods:
-      metricName: s3_connect_heap_utilization_pcnt
-      targetAverageValue: "{{ .Values.archivalConnectAutoscaling.memory.targetPCNT }}"
+      metric:
+        name: s3_connect_heap_utilization_pcnt
+      target: 
+        type: AverageValue
+        averageValue: {{ .Values.archivalConnectAutoscaling.memory.targetPCNT }}
   - type: Pods
     pods:
-      metricName: s3_connect_nio_utilization_pcnt
-      targetAverageValue: "{{ .Values.archivalConnectAutoscaling.memory.targetPCNT }}"
+      metric:
+        name: s3_connect_nio_utilization_pcnt
+      target:
+        type: AverageValue
+        averageValue: {{ .Values.archivalConnectAutoscaling.memory.targetPCNT }}
   - type: Resource
     resource:
       name: cpu
-      targetAverageValue: "{{ .Values.archivalConnectAutoscaling.cpu.targetAverageValue }}"
+      target:
+        type: AverageValue
+        averageValue: {{ .Values.archivalConnectAutoscaling.cpu.targetAverageValue }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 4
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 10
+      selectPolicy: Max        
 {{- end -}}

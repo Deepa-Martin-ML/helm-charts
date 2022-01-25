@@ -1,8 +1,8 @@
 {{- if .Values.restKafkaAutoscaling.enabled -}}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "autoscaling.fullname" . }}-rest-kafka
+  name: {{ .Release.Namespace }}-rest-kafka
   namespace: {{ .Release.Namespace }}
 
 spec:
@@ -15,10 +15,29 @@ spec:
   metrics:
   - type: Pods
     pods:
-      metricName: kafka_rest_heap_utilization_pcnt
-      targetAverageValue: "{{ .Values.restKafkaAutoscaling.memory.targetPCNT }}"
+      metric:
+        name: kafka_rest_heap_utilization_pcnt
+      target:
+        type: AverageValue
+        averageValue: {{ .Values.restKafkaAutoscaling.memory.targetPCNT }}
   - type: Resource
     resource:
       name: cpu
-      targetAverageValue: "{{ .Values.restKafkaAutoscaling.cpu.targetAverageValue }}"
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.restKafkaAutoscaling.cpu.targetAverageValue }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 4
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 10
+      selectPolicy: Max
 {{- end -}}

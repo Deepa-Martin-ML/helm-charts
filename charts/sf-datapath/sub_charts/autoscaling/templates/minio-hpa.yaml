@@ -1,8 +1,8 @@
 {{ if and (and .Values.global.archival.enabled .Values.global.secrets.gcs.enable) .Values.archivalConnectAutoscaling.enabled -}}
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: {{ include "autoscaling.fullname" . }}-minio
+  name: {{ .Release.Namespace }}-minio
   namespace: {{ .Release.Namespace }}
 
 spec:
@@ -16,9 +16,27 @@ spec:
   - type: Resource
     resource:
       name: cpu
-      targetAverageValue: {{ .Values.minioAutoscaling.cpu.targetAverageValue }}
+      target:
+        type: AverageValue
+        averageValue: {{ .Values.minioAutoscaling.cpu.targetAverageValue }}
   - type: Resource
     resource:
       name: memory
-      targetAverageValue: {{ .Values.minioAutoscaling.memory.targetAverageValue }}
+      target:
+        type: AverageValue
+        averageValue: {{ .Values.minioAutoscaling.memory.targetAverageValue }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 4
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 10
+      selectPolicy: Max
 {{- end }}
